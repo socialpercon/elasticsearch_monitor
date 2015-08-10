@@ -1,0 +1,53 @@
+#!/usr/bin/env python2.7
+# -*- coding: utf-8 -*-
+import os
+import glob
+import argparse
+import sys
+from elasticsearch import Elasticsearch
+from tika import parser
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+
+def look_folder(path):
+    abs_path = os.path.abspath(path)
+    file_list = glob.glob('{0}/*'.format(abs_path))
+    return file_list
+
+
+def pdf_to_es(file_list, es_client):
+    for file_path in file_list:
+        file_dir = os.path.basename(os.path.dirname(file_path))
+
+        full_file_name = os.path.basename(file_path)
+        file_name, file_type = os.path.splitext(full_file_name)
+        if not file_type == '.pdf':
+            print 'is not pdf : {0}'.format(file_path)
+            continue
+
+        print file_name, file_type
+        parsed = parser.from_file(file_path)
+        print 'parse keys : {0}'.format(parsed.keys())
+        parsed['file_name'] = full_file_name
+        index_name = 'pdf'
+        es_client.index(index=index_name, doc_type=file_dir, body=parsed)
+
+
+def main(argv):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filedir', help='pdf dile dir')
+    parser.add_argument('--host', type=str, default='localhost', help='elasticsearch host')
+    parser.add_argument('--port', type=int, default=9200, help='elasticsearch port')
+    args = parser.parse_args(argv)
+    host = args.host
+    port = args.port
+    path = args.filedir
+    es = Elasticsearch(['http://{0}:{1}'.format(host,port)])
+
+    file_list = look_folder(path)
+    pdf_to_es(file_list, es)
+
+if __name__ == '__main__':
+    print "command : {0}".format(sys.argv[1:])
+    main(sys.argv[1:])
