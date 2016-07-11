@@ -6,8 +6,8 @@ NAME="elasticsearch"
 
 EXECUTIVE_FILE_PATH="${ELASTICSEARCH_HOME}/bin/elasticsearch"
 
-PID_DIR="${BIN}/pids/"
-LOG_DIR="${BIN}/log/"
+PID_DIR="${BIN}/../pids/"
+LOG_DIR="${BIN}/../log/"
 
 PID_FILE="${PID_DIR}/${NAME}.pid"
 LOG_FILE="${LOG_DIR}/${NAME}.log"
